@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
+    "target": "es2017",
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
