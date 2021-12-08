@@ -40,7 +40,9 @@
     "postpack": "rimraf oclif.manifest.json",
     "prepack": "rimraf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
     "test": "echo NO TESTS",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "build": "npm i && tsc -b",
+    "release": "semantic-release || true"
   },
   "types": "lib/index.d.ts",
   "dependencies": {
@@ -51,7 +53,6 @@
     "listr": "^0.14.3",
     "rxjs": "^7.4.0",
     "tslib": "^1.14.1",
-    "write-json": "^3.0.1",
-    "write-json-file": "^5.0.0"
+    "write-json": "^3.0.1"
   }
 }
