@@ -29,10 +29,8 @@
         "/npm-shrinkwrap.json",
         "/oclif.manifest.json"
     ],
-    "keywords": [
-        "oclif"
-    ],
     "license": "MIT",
+    "private": false,
     "main": "lib/index.js",
     "oclif": {
         "commands": "./lib/commands",
