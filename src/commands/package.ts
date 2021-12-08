@@ -1,7 +1,7 @@
 import { Command, flags } from '@oclif/command';
 import { CommandResult, runCommand } from '../utils';
 import { exec } from 'child_process';
-import * as Listr from 'Listr';
+import * as Listr from 'listr';
 import * as writeJson from 'write-json';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
