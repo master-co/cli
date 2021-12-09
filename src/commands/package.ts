@@ -47,6 +47,13 @@ export default class Package extends Command {
 
     async run() {
         const { args, flags } = this.parse(Package);
+
+        // Check github cli installed
+        try {
+            await runCommand('gh');
+        } catch {
+            console.error(`GitHub CLI not available\n https://cli.github.com/`);
+        }
         
         const questionsPart1 = [];
         if (!flags.css && !flags.util) {
@@ -140,17 +147,6 @@ export default class Package extends Command {
         }
 
         const tasks = new Listr([
-            // Check github cli installed
-            {
-                title: 'Check github cli installed',
-                task: (ctx, task) => runCommand('gh')
-                    .then(() => ctx.gh = true)
-                    .catch(() => {
-                        throw new Error(`GitHub CLI not available\n https://cli.github.com/`)
-                        // ctx.gh = false;
-                        // task.skip('GitHub CLI not available');
-                    })
-            },
             // Clone package
             {
                 title: 'Clone package',
@@ -243,7 +239,6 @@ export default class Package extends Command {
                         // Check auth status
                         {
                             title: 'Check auth status',
-                            skip: ctx => ctx.gh === false,
                             task: (ctx, task) => runCommand('gh auth status').then(result => {
                                 if (result.error.length > 0 && result.error[0].startsWith('You are not logged into any GitHub hosts')) {
                                     ctx.ghLogin = false;
@@ -257,7 +252,6 @@ export default class Package extends Command {
                         {
                             title: 'Login',
                             enabled: ctx => ctx.ghLogin === false,
-                            skip: ctx => ctx.gh === false,
                             task: (ctx, task) => (new Promise<CommandResult>(function (resolve, reject) {
                                 const child = exec(`gh auth login -w`);
 
@@ -295,7 +289,6 @@ export default class Package extends Command {
                         // Create repository
                         {
                             title: 'Create repository',
-                            skip: ctx => ctx.gh === false,
                             task: (ctx, task) => {
                                 if (kind === 'personal') {
                                     return runCommand(`gh repo create ${args.PACKAGE_NAME} --public`)
