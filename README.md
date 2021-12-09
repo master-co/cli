@@ -68,4 +68,6 @@ EXAMPLES
   $ m package new PACKAGE_NAME --css --org ORGANIZATION
   $ m package new PACKAGE_NAME --util --user USERNAME
 ```
+
+_See code: [src/commands/package.ts](https://github.com/master-style/cli/blob/v0.0.0/src/commands/package.ts)_
 <!-- commandsstop -->

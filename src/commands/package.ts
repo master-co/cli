@@ -48,10 +48,10 @@ export default class Package extends Command {
     async run() {
         const { args, flags } = this.parse(Package);
         
-        const questions = [];
+        const questionsPart1 = [];
         if (!flags.css && !flags.util) {
             // 如沒給 --css 或 --util
-            questions.push({
+            questionsPart1.push({
                 type: 'list',
                 name: 'model',
                 message: `What's your package model?`,
@@ -73,13 +73,13 @@ export default class Package extends Command {
         }
         if (!flags.org && !flags.user) {
             // 如沒給 --org 或 --user
-            questions.push({
+            questionsPart1.push({
                 type: 'list',
                 name: 'kind',
                 message: `What's kind of your package?`,
                 choices: ['organization', 'personal'],
             });
-            questions.push({
+            questionsPart1.push({
                 type: 'input',
                 name: 'org',
                 message: 'Enter your organization name',
@@ -88,7 +88,7 @@ export default class Package extends Command {
                     return answers.kind == 'organization';
                 },
             });
-            questions.push({
+            questionsPart1.push({
                 type: 'input',
                 name: 'user',
                 message: 'Enter your username name',
@@ -97,26 +97,37 @@ export default class Package extends Command {
                 },
             });
         }
-        questions.push({
+        
+        const answersPart1: any = await prompt(questionsPart1);
+
+        const branch = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
+        const kind = answersPart1.kind ? answersPart1.kind : (flags.user ? 'personal' : 'organization');
+        const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags.user ? flags.user : flags.org));
+
+        if (branch !== 'standard')
+        {
+            args.PACKAGE_NAME = `${args.PACKAGE_NAME}.${branch === 'js' ? 'util' : 'css'}`;
+        }
+        let defaultNpmPackageName = `@master/${args.PACKAGE_NAME}`;
+
+        const questionsPart2 = [];
+        questionsPart2.push({
             type: 'input',
             name: 'npmPackageName',
             message: 'npm package name',
-            default: `@master/${args.PACKAGE_NAME}`
+            default: defaultNpmPackageName
         });
-        questions.push({
+        questionsPart2.push({
             type: 'input',
             name: 'npmPackageLicense',
             message: 'npm package license',
             default: 'MIT'
         });
-        const answers: any = await prompt(questions);
+        const answersPart2: any = await prompt(questionsPart2);
 
-        const branch = answers.model ? answers.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
-        const kind = answers.kind ? answers.kind : (flags.user ? 'personal' : 'organization');
-        const accountName = answers.user ? answers.user : (answers.org ? answers.org : (flags.user ? flags.user : flags.org));
         const packageJson = {
-            name: answers.npmPackageName,
-            license: answers.npmPackageLicense,
+            name: answersPart2.npmPackageName,
+            license: answersPart2.npmPackageLicense,
             main: branch === 'css' ? 'index.css' : 'index.js',
             private: false,
             repository: {
@@ -129,6 +140,17 @@ export default class Package extends Command {
         }
 
         const tasks = new Listr([
+            // Check github cli installed
+            {
+                title: 'Check github cli installed',
+                task: (ctx, task) => runCommand('gh')
+                    .then(() => ctx.gh = true)
+                    .catch(() => {
+                        throw new Error(`GitHub CLI not available\n https://cli.github.com/`)
+                        // ctx.gh = false;
+                        // task.skip('GitHub CLI not available');
+                    })
+            },
             // Clone package
             {
                 title: 'Clone package',
@@ -218,16 +240,6 @@ export default class Package extends Command {
                 title: 'Create github repository with GitHub CLI',
                 task: () => {
                     return new Listr([
-                        // Check github cli installed
-                        {
-                            title: 'Check github cli installed',
-                            task: (ctx, task) => runCommand('gh')
-                                .then(() => ctx.gh = true )
-                                .catch(() => {
-                                    ctx.gh = false;
-                                    task.skip('GitHub CLI not available');
-                                })
-                        },
                         // Check auth status
                         {
                             title: 'Check auth status',
