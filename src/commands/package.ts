@@ -68,8 +68,12 @@ export default class Package extends Command {
                         value: 'standard',
                     },
                     {
-                        name: 'util (utility, function, class, etc.)',
+                        name: 'util (utility, function, etc.)',
                         value: 'js',
+                    },
+                    {
+                        name: 'class (toolchain, engine, etc.)',
+                        value: 'class',
                     },
                     {
                         name: 'css (style, theme, color, etc.)',
