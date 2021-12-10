@@ -22,13 +22,13 @@ export default class Package extends Command {
         css: flags.boolean({ description: 'generate a css package', exclusive: ['util', 'class'] }),
         util: flags.boolean({ description: 'generate a util package', exclusive: ['css', 'class'] }),
         class: flags.boolean({ description: 'generate a class package', exclusive: ['css', 'util'] }),
-        org: flags.string({
+        'gh-org': flags.string({
             description: 'create github organization package',
-            exclusive: ['user']
+            exclusive: ['gh-user']
         }),
-        user: flags.string({
+        'gh-user': flags.string({
             description: 'create github personal package',
-            exclusive: ['org']
+            exclusive: ['gh-org']
         })
     }
 
@@ -81,7 +81,7 @@ export default class Package extends Command {
                 ],
             });
         }
-        if (!flags.org && !flags.user) {
+        if (!flags['gh-org'] && !flags['gh-user']) {
             // 如沒給 --org 或 --user
             questionsPart1.push({
                 type: 'list',
@@ -113,8 +113,8 @@ export default class Package extends Command {
         const model = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
         // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
         const branch = (model === 'standard' || model === 'css') ? model : 'js';
-        const kind = answersPart1.kind ? answersPart1.kind : (flags.user ? 'personal' : 'organization');
-        const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags.user ? flags.user : flags.org));
+        const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'personal' : 'organization');
+        const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
 
         if (model === 'js' || model === 'css')
         {

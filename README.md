@@ -55,10 +55,11 @@ USAGE
   $ m package NEW PACKAGE_NAME
 
 OPTIONS
-  -c, --css        generate a css package
-  -o, --org=org    create github organization package
-  -p, --user=user  create github personal package
-  -u, --util       generate a util package
+  --class            generate a class package
+  --css              generate a css package
+  --gh-org=gh-org    create github organization package
+  --gh-user=gh-user  create github personal package
+  --util             generate a util package
 
 ALIASES
   $ m p
