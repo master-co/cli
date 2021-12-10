@@ -113,7 +113,7 @@ export default class Package extends Command {
 
         const model = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
         // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
-        const branch = model === 'standard' || model === 'css' ? model : 'js';
+        const branch = (model === 'standard' || model === 'css') ? model : 'js';
         const kind = answersPart1.kind ? answersPart1.kind : (flags.user ? 'personal' : 'organization');
         const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags.user ? flags.user : flags.org));
 
