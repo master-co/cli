@@ -19,9 +19,11 @@ export default class Package extends Command {
 
     static flags = {
         help: flags.help({ char: 'h', hidden: true }),
-        css: flags.boolean({ description: 'generate a css package', exclusive: ['util', 'class'] }),
-        util: flags.boolean({ description: 'generate a util package', exclusive: ['css', 'class'] }),
-        class: flags.boolean({ description: 'generate a class package', exclusive: ['css', 'util'] }),
+        model: flags.string({
+            char: 'm',
+            description: 'According to which model to build the package',
+            options: ['standard', 'css', 'util', 'class']
+        }),
         'gh-org': flags.string({
             description: 'create github organization package',
             exclusive: ['gh-user']
@@ -55,7 +57,7 @@ export default class Package extends Command {
         }
         
         const questionsPart1 = [];
-        if (!flags.css && !flags.util) {
+        if (!flags.model) {
             // 如沒給 --css 或 --util
             questionsPart1.push({
                 type: 'list',
@@ -68,7 +70,7 @@ export default class Package extends Command {
                     },
                     {
                         name: 'util (utility, function, etc.)',
-                        value: 'js',
+                        value: 'util',
                     },
                     {
                         name: 'class (toolchain, engine, etc.)',
@@ -110,15 +112,15 @@ export default class Package extends Command {
         
         const answersPart1: any = await prompt(questionsPart1);
 
-        const model = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
+        const model = answersPart1.model ? answersPart1.model : flags.model;
         // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
         const branch = (model === 'standard' || model === 'css') ? model : 'js';
         const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'personal' : 'organization');
         const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
 
-        if (model === 'js' || model === 'css')
+        if (model === 'util' || model === 'css')
         {
-            args.PACKAGE_NAME = `${args.PACKAGE_NAME}.${model === 'js' ? 'util' : 'css'}`;
+            args.PACKAGE_NAME = `${args.PACKAGE_NAME}.${model}`;
         }
         let defaultNpmPackageName = `@master/${args.PACKAGE_NAME}`;
 

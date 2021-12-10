@@ -55,11 +55,9 @@ USAGE
   $ m package NEW PACKAGE_NAME
 
 OPTIONS
-  --class            generate a class package
-  --css              generate a css package
-  --gh-org=gh-org    create github organization package
-  --gh-user=gh-user  create github personal package
-  --util             generate a util package
+  -m, --model=standard|css|util|class  According to which model to build the package
+  --gh-org=gh-org                      create github organization package
+  --gh-user=gh-user                    create github personal package
 
 ALIASES
   $ m p
