@@ -19,15 +19,14 @@ export default class Package extends Command {
 
     static flags = {
         help: flags.help({ char: 'h', hidden: true }),
-        css: flags.boolean({ char: 'c', description: 'generate a css package', exclusive: ['util'] }),
-        util: flags.boolean({ char: 'u', description: 'generate a util package', exclusive: ['css'] }),
+        css: flags.boolean({ description: 'generate a css package', exclusive: ['util', 'class'] }),
+        util: flags.boolean({ description: 'generate a util package', exclusive: ['css', 'class'] }),
+        class: flags.boolean({ description: 'generate a class package', exclusive: ['css', 'util'] }),
         org: flags.string({
-            char: 'o',
             description: 'create github organization package',
             exclusive: ['user']
         }),
         user: flags.string({
-            char: 'p',
             description: 'create github personal package',
             exclusive: ['org']
         })
