@@ -111,13 +111,15 @@ export default class Package extends Command {
         
         const answersPart1: any = await prompt(questionsPart1);
 
-        const branch = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
+        const model = answersPart1.model ? answersPart1.model : (flags.css ? 'css' : (flags.util ? 'js' : 'standard'));
+        // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
+        const branch = model === 'standard' || model === 'css' ? model : 'js';
         const kind = answersPart1.kind ? answersPart1.kind : (flags.user ? 'personal' : 'organization');
         const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags.user ? flags.user : flags.org));
 
-        if (branch !== 'standard')
+        if (model === 'js' || model === 'css')
         {
-            args.PACKAGE_NAME = `${args.PACKAGE_NAME}.${branch === 'js' ? 'util' : 'css'}`;
+            args.PACKAGE_NAME = `${args.PACKAGE_NAME}.${model === 'js' ? 'util' : 'css'}`;
         }
         let defaultNpmPackageName = `@master/${args.PACKAGE_NAME}`;
 
