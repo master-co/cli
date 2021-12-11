@@ -184,7 +184,7 @@ export default class Package extends Command {
 
         // path
         const newPackagePath = path.join(process.cwd(), args.name);
-        const masterJsonFilePath = path.join(process.cwd(), args.name, 'master.json');
+        const configFilePath = path.join(process.cwd(), args.name, 'master.json');
         const srcPackageJsonPath = path.join(process.cwd(), args.name, 'src', 'package.json');
 
         const tasks = new Listr([
@@ -260,13 +260,13 @@ export default class Package extends Command {
                         {
                             title: 'Update master.json',
                             task: async () => {
-                                const masterJson = await readJson(masterJsonFilePath);
-                                masterJson.name = args.name;
-                                masterJson.github = {
+                                const config = await readJson(configFilePath);
+                                config.name = args.name;
+                                config.github = {
                                     repoName: args.name,
                                     name: accountName
                                 };
-                                await writeJson(masterJsonFilePath, masterJson);
+                                await writeJson(configFilePath, config);
                             }
                         },
                         // Git add
