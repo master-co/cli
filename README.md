@@ -56,7 +56,7 @@ USAGE
 
 OPTIONS
   -m, --model=standard|css|util|class  According to which model to build the package
-  --data=data                          [default: master.js] According to what file to render
+  --data=data                          [default: master.json] According to what file to render
   --gh-org=gh-org                      Create github organization package
   --gh-user=gh-user                    Create github personal package
 
@@ -68,7 +68,7 @@ EXAMPLES
   $ m package new PACKAGE_NAME --css --org ORGANIZATION
   $ m package new PACKAGE_NAME --util --user USERNAME
   ------
-  $ m package render README.md --data master.js
+  $ m package render README.md --data master.json
 ```
 
 _See code: [src/commands/package.ts](https://github.com/master-style/cli/blob/v0.0.0/src/commands/package.ts)_
