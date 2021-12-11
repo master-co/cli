@@ -224,23 +224,23 @@ export default class Package extends Command {
                     ]);
                 }
             },
-            // Init package.json and master.js
+            // Init package info files
             {
-                title: 'Init package.json and master.js',
+                title: 'Init package info files',
                 task: () => {
                     return new Listr([
                         // Checkout to main
                         {
                             title: 'Checkout to main',
-                            task: (_, task) => runCommand(`git checkout -b main`, newPackagePath).then(result => {
-                                if (result.code !== 0) {
-                                    task.skip(result.error.join(''));
+                            task: () => runCommand(`git checkout -b main`, newPackagePath).then(result => {
+                                if (result.code !== 0 && result.error.length > 0) {
+                                    throw new Error(result.error.join(''));
                                 }
                             })
                         },
-                        // Write src/package.json
+                        // Create src/package.json
                         {
-                            title: 'Write src/package.json',
+                            title: 'Create src/package.json',
                             task: () => {
                                 return new Promise<void>((resolve, reject) => {
                                     writeJson(srcPackageJsonPath, packageJson, err => {
@@ -255,16 +255,16 @@ export default class Package extends Command {
                         // Git add
                         {
                             title: 'Git add',
-                            task: (_, task) => runCommand(`git add src/package.json`, newPackagePath).then(result => {
+                            task: () => runCommand(`git add src/package.json`, newPackagePath).then(result => {
                                 if (result.code !== 0 && result.error.length > 0) {
-                                    task.skip(result.error.join(''));
+                                    throw new Error(result.error.join(''));
                                 }
                             })
                         },
-                        // Write master.js
+                        // Update master.js
                         {
-                            title: 'Write master.js',
-                            task: async (_, task) => {
+                            title: 'Update master.js',
+                            task: async () => {
                                 // read master.js
                                 const originMasterJs = await fs.readFile(masterJsFilePath, 'utf8');
 
@@ -286,16 +286,34 @@ export default class Package extends Command {
                         // Git add
                         {
                             title: 'Git add',
-                            task: (_, task) => runCommand(`git add master.js`, newPackagePath).then(result => {
+                            task: () => runCommand(`git add master.js`, newPackagePath).then(result => {
                                 if (result.code !== 0 && result.error.length > 0) {
-                                    task.skip(result.error.join(''));
+                                    throw new Error(result.error.join(''));
+                                }
+                            })
+                        },
+                        // Update README.md
+                        {
+                            title: 'Update README.md',
+                            task: () => runCommand('m p r', newPackagePath).then(result => {
+                                if (result.code !== 0 && result.error.length > 0) {
+                                    throw new Error(result.error.join(''));
+                                }
+                            })
+                        },
+                        // Git add
+                        {
+                            title: 'Git add',
+                            task: () => runCommand(`git add README.md`, newPackagePath).then(result => {
+                                if (result.code !== 0 && result.error.length > 0) {
+                                    throw new Error(result.error.join(''));
                                 }
                             })
                         },
                         // Git commit
                         {
                             title: 'Git commit',
-                            task: (_, task) => runCommand(`git commit -m "init package.json and master.js"`, newPackagePath).then(result => {
+                            task: () => runCommand(`git commit -m "Init package info files"`, newPackagePath).then(result => {
                                 if (result.code !== 0 && result.error.length > 0) {
                                     throw new Error(result.error.join(''));
                                 }
