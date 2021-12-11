@@ -458,34 +458,22 @@ export default class Package extends Command {
         
         // load source data
         const sourceDataFilePath = path.join(process.cwd(), flags.data);
-        let roughSourceDataString = await fs.readFile(sourceDataFilePath, 'utf8');
-        let roughSourceData;
-        if (souceDataFileExt === '.js') {
-            roughSourceData = eval(roughSourceDataString);
-        } else {
-            roughSourceData = JSON.parse(roughSourceDataString);
-        }
-
-        // render sourceData
-        roughSourceData['package'] = packageJsonData;
-        const roughTemplate = new TextTemplate(roughSourceDataString);
-        const sourceDataString = roughTemplate.render(roughSourceData);
-
+        let sourceDataString = await fs.readFile(sourceDataFilePath, 'utf8');
         let sourceData;
         if (souceDataFileExt === '.js') {
             sourceData = eval(sourceDataString);
         } else {
-            sourceData = JSON.parse(sourceData);
+            sourceData = JSON.parse(sourceDataString);
         }
         // 在 sourceData 中加入 package.json 的資料
         sourceData['package'] = packageJsonData;
 
         // 以 sourceData render 目標檔案
-        // render {{ }} 標記的部分
-        const targetTemplate1 = new TextTemplate(targetFileString);
-        const resultString1 = targetTemplate1.render(sourceData);
         // render 註解標記的部分
-        const targetTemplate2 = new TextTemplate(resultString1, { behavior: 'slot', language: targetFileLanguage });
+        const targetTemplate1 = new TextTemplate(targetFileString, { behavior: 'slot', language: targetFileLanguage });
+        const resultString1 = targetTemplate1.render(sourceData);
+        // render {{ }} 標記的部分
+        const targetTemplate2 = new TextTemplate(resultString1);
         const resultString2 = targetTemplate2.render(sourceData);
 
         // 寫回目標檔案
