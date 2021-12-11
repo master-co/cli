@@ -24,8 +24,7 @@
     },
     "files": [
         "/bin",
-        "/lib",
-        "/oclif.manifest.json"
+        "/lib"
     ],
     "license": "MIT",
     "private": false,
