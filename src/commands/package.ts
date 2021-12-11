@@ -1,5 +1,7 @@
 import { Command, flags } from '@oclif/command';
-import { CommandResult, getMasterTextTemplateLanguage, runCommand } from '../utils';
+import { CommandResult } from '../interfaces/command-result';
+import { getTextTemplateLanguage } from '../utils/get-text-template-language';
+import { runCommand } from '../utils/run-command';
 import { TextTemplate } from '@master/text-template';
 import { promises as fs } from 'fs';
 import * as Listr from 'listr';
@@ -421,7 +423,7 @@ export default class Package extends Command {
         // load target file
         const targetFilePath = path.join(process.cwd(), args.name);
         const targetFileStr = await fs.readFile(targetFilePath, 'utf8');
-        const targetFileLanguage = getMasterTextTemplateLanguage(path.extname(args.name))
+        const targetFileLanguage = getTextTemplateLanguage(path.extname(args.name))
 
         // load package.json
         const srcPackageJsonPath = path.join(process.cwd(), 'src', 'package.json');

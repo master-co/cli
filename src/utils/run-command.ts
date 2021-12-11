@@ -1,32 +1,5 @@
 import { spawn } from 'child_process';
-
-export function getMasterTextTemplateLanguage(fileExt: string) {
-    switch (fileExt) {
-        case '.hs':
-        case '.lhs':
-            return 'haskell';
-        case '.fs':
-        case '.fth':
-        case '.forth':
-            return 'forth';
-        case '.pp':
-            return 'pascal';
-        case '.html':
-        case '.htm':
-            return 'html';
-        case '.md':
-            return 'readme';
-        default:
-            return '';
-    }
-}
-
-export interface CommandResult{
-    code: number;
-    signal: string;
-    out: string[];
-    err: string[];
-}
+import { CommandResult } from '../interfaces/command-result';
 
 export function runCommand(command: string, path?: string, stdout?: (data: string) => void, stderr?: (data: string) => void): Promise<CommandResult> {
     return new Promise(function (resolve, reject) {
@@ -50,6 +23,6 @@ export function runCommand(command: string, path?: string, stdout?: (data: strin
         });
         child.stdin.end();
         child.on('error', (err: Error) => reject(err));
-        child.on('exit', (code: number, signal: string) => resolve({ code, signal, out, err}));
+        child.on('exit', (code: number, signal: string) => resolve({ code, signal, out, err }));
     });
 }
