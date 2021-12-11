@@ -27,7 +27,7 @@ USAGE
 # Commands
 <!-- commands -->
 * [`m help [COMMAND]`](#m-help-command)
-* [`m package NEW PACKAGE_NAME`](#m-package-new-package_name)
+* [`m package ACTION [NAME]`](#m-package-action-name)
 
 ## `m help [COMMAND]`
 
@@ -46,18 +46,19 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
 
-## `m package NEW PACKAGE_NAME`
+## `m package ACTION [NAME]`
 
 master package
 
 ```
 USAGE
-  $ m package NEW PACKAGE_NAME
+  $ m package ACTION [NAME]
 
 OPTIONS
   -m, --model=standard|css|util|class  According to which model to build the package
-  --gh-org=gh-org                      create github organization package
-  --gh-user=gh-user                    create github personal package
+  --data=data                          [default: master.js] According to what file to render
+  --gh-org=gh-org                      Create github organization package
+  --gh-user=gh-user                    Create github personal package
 
 ALIASES
   $ m p
@@ -66,6 +67,8 @@ EXAMPLES
   $ m package new PACKAGE_NAME
   $ m package new PACKAGE_NAME --css --org ORGANIZATION
   $ m package new PACKAGE_NAME --util --user USERNAME
+  ------
+  $ m package render README.md --data master.js
 ```
 
 _See code: [src/commands/package.ts](https://github.com/master-style/cli/blob/v0.0.0/src/commands/package.ts)_

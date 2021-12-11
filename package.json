@@ -45,11 +45,13 @@
     },
     "types": "lib/index.d.ts",
     "dependencies": {
+        "@master/text-template": "^1.0.0-alpha.9",
         "@oclif/command": "^1.8.9",
         "@oclif/config": "^1.18.2",
         "@oclif/plugin-help": "^3.2.14",
         "inquirer": "^8.2.0",
         "listr": "^0.14.3",
+        "readjson": "^2.2.2",
         "rxjs": "^7.4.0",
         "tslib": "^1.14.1",
         "write-json": "^3.0.1"
