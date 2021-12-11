@@ -155,22 +155,28 @@ export default class Package extends Command {
         const questionsPart2 = [];
         questionsPart2.push({
             type: 'input',
-            name: 'npmPackageName',
+            name: 'name',
             message: 'npm package name',
             default: defaultNpmPackageName
         });
         questionsPart2.push({
             type: 'input',
-            name: 'npmPackageLicense',
+            name: 'license',
             message: 'npm package license',
             default: 'MIT'
+        });
+        questionsPart2.push({
+            type: 'input',
+            name: 'description',
+            message: 'npm package description'
         });
         const answersPart2: any = await prompt(questionsPart2);
 
         // questions part 2 summary
         const packageJson = {
-            name: answersPart2.npmPackageName,
-            license: answersPart2.npmPackageLicense,
+            name: answersPart2.name,
+            description: answersPart2.description,
+            license: answersPart2.license,
             main: branch === 'css' ? 'index.css' : 'index.js',
             private: false,
             repository: {
