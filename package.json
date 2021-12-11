@@ -45,7 +45,7 @@
     },
     "types": "lib/index.d.ts",
     "dependencies": {
-        "@master/text-template": "^1.0.0-alpha.9",
+        "@master/text-template": "^1.0.0-alpha.10",
         "@oclif/command": "^1.8.9",
         "@oclif/config": "^1.18.2",
         "@oclif/plugin-help": "^3.2.14",
