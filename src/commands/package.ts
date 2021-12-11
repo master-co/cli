@@ -145,7 +145,7 @@ export default class Package extends Command {
         const model = answersPart1.model ? answersPart1.model : flags.model;
         const branch = (model === 'standard' || model === 'css') ? model : 'js'; // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
         const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'personal' : 'organization');
-        const accountName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
+        const githubName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
         if (model === 'util' || model === 'css') {
             args.name = `${args.name}.${model}`; // 為 PACKAGE_NAME 加上後綴
         }
@@ -181,7 +181,7 @@ export default class Package extends Command {
             private: false,
             repository: {
                 type: "git",
-                url: `https://github.com/${accountName}/${args.name}.git`
+                url: `https://github.com/${githubName}/${args.name}.git`
             }
         }
         if (branch === 'js') {
@@ -269,7 +269,7 @@ export default class Package extends Command {
                                 const config = await readJson(configFilePath);
                                 config.name = args.name;
                                 config.github = {
-                                    name: accountName
+                                    name: githubName
                                 };
                                 await writeJson(configFilePath, config);
                             }
@@ -363,7 +363,7 @@ export default class Package extends Command {
                                 if (kind === 'personal') {
                                     result = await runCommand(`gh repo create ${args.name} --public`);
                                 } else {
-                                    result = await runCommand(`gh repo create ${accountName}/${args.name} --public`);
+                                    result = await runCommand(`gh repo create ${githubName}/${args.name} --public`);
                                 }
                                 if (result.code !== 0) {
                                     ctx.ghRepoCreated = false;
@@ -378,7 +378,7 @@ export default class Package extends Command {
                             title: 'Remote add origin',
                             skip: ctx => ctx.ghRepoCreated !== true,
                             task: async (ctx, task) => {
-                                const result = await runCommand(`git remote add origin https://github.com/${accountName}/${args.name}.git`, newPackagePath);
+                                const result = await runCommand(`git remote add origin https://github.com/${githubName}/${args.name}.git`, newPackagePath);
                                 if (result.code !== 0) {
                                     ctx.remoteAdded = false;
                                     task.skip(result.err.join(''));
@@ -408,8 +408,8 @@ export default class Package extends Command {
 
     async render(args: any, flags: any) {
         // check data file ext
-        const souceDataFileExt = path.extname(flags.data);
-        if (souceDataFileExt !== '.js' && souceDataFileExt !== '.json') {
+        const dataFileExt = path.extname(flags.data);
+        if (dataFileExt !== '.js' && dataFileExt !== '.json') {
             throw new Error('Only support ".js" and ".json" files');
         }
 
@@ -417,34 +417,36 @@ export default class Package extends Command {
         if (!args.name) {
             args.name = 'README.md';
         }
-        
+
         // load target file
         const targetFilePath = path.join(process.cwd(), args.name);
-        const targetFileString = await fs.readFile(targetFilePath, 'utf8');
+        const targetFileStr = await fs.readFile(targetFilePath, 'utf8');
         const targetFileLanguage = getMasterTextTemplateLanguage(path.extname(args.name))
 
         // load package.json
         const srcPackageJsonPath = path.join(process.cwd(), 'src', 'package.json');
-        const packageJsonData = await readJson(srcPackageJsonPath);
-        
+        const packageJson = await readJson(srcPackageJsonPath);
+
         // load source data
-        const sourceDataFilePath = path.join(process.cwd(), flags.data);
-        let sourceDataString = await fs.readFile(sourceDataFilePath, 'utf8');
-        let sourceData;
-        if (souceDataFileExt === '.js') {
-            sourceData = eval(sourceDataString);
+        const dataFilePath = path.join(process.cwd(), flags.data);
+        let dataFileStr = await fs.readFile(dataFilePath, 'utf8');
+        let data: any;
+        if (dataFileExt === '.js') {
+            data = eval(dataFileStr);
         } else {
-            sourceData = JSON.parse(sourceDataString);
+            data = JSON.parse(dataFileStr);
         }
 
-        // add package.json data to sourceData
-        sourceData['package'] = packageJsonData;
+        // assign package.json to data
+        data.package = packageJson;
 
-        const targetTemplate1 = new TextTemplate(targetFileString, { behavior: 'slot', language: targetFileLanguage });
-        const resultString1 = targetTemplate1.render(sourceData);
-        const targetTemplate2 = new TextTemplate(resultString1);
-        const resultString2 = targetTemplate2.render(sourceData);
+        const slotTemplate = new TextTemplate(targetFileStr, {
+            behavior: 'slot',
+            language: targetFileLanguage
+        });
+        const template = new TextTemplate(slotTemplate.render(data));
+        const renderedText = template.render(data);
 
-        await fs.writeFile(targetFilePath, resultString2);
+        await fs.writeFile(targetFilePath, renderedText);
     }
 }
