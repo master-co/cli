@@ -55,6 +55,6 @@
         "readjson": "^2.2.2",
         "rxjs": "^7.4.0",
         "tslib": "^1.14.1",
-        "write-json": "^3.0.1"
+        "writejson": "^3.0.0"
     }
 }

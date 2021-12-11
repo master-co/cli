@@ -4,7 +4,7 @@ import { exec } from 'child_process';
 import { TextTemplate } from '@master/text-template';
 import { promises as fs } from 'fs';
 import * as Listr from 'listr';
-import * as writeJson from 'write-json';
+import * as writeJson from 'writejson';
 import * as readJson from 'readjson';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
@@ -19,7 +19,7 @@ export default class Package extends Command {
         `$ m package new PACKAGE_NAME --css --org ORGANIZATION`,
         `$ m package new PACKAGE_NAME --util --user USERNAME`,
         `------`,
-        `$ m package render README.md --data master.js`,
+        `$ m package render README.md --data master.json`,
     ]
 
     static flags = {
@@ -43,7 +43,7 @@ export default class Package extends Command {
         // render
         data: flags.string({
             description: 'According to what file to render',
-            default: 'master.js'
+            default: 'master.json'
         })
     }
 
@@ -185,7 +185,7 @@ export default class Package extends Command {
 
         // path
         const newPackagePath = path.join(process.cwd(), args.name);
-        const masterJsFilePath = path.join(process.cwd(), args.name, 'master.js');
+        const masterJsonFilePath = path.join(process.cwd(), args.name, 'master.json');
         const srcPackageJsonPath = path.join(process.cwd(), args.name, 'src', 'package.json');
 
         const tasks = new Listr([
@@ -241,16 +241,7 @@ export default class Package extends Command {
                         // Create src/package.json
                         {
                             title: 'Create src/package.json',
-                            task: () => {
-                                return new Promise<void>((resolve, reject) => {
-                                    writeJson(srcPackageJsonPath, packageJson, err => {
-                                        if (err) {
-                                            reject(err);
-                                        }
-                                        resolve();
-                                    });
-                                })
-                            }
+                            task: () => writeJson(srcPackageJsonPath, packageJson)
                         },
                         // Git add
                         {
@@ -261,32 +252,26 @@ export default class Package extends Command {
                                 }
                             })
                         },
-                        // Update master.js
+                        // Update master.json
                         {
-                            title: 'Update master.js',
+                            title: 'Update master.json',
                             task: async () => {
-                                // read master.js
-                                const originMasterJs = await fs.readFile(masterJsFilePath, 'utf8');
+                                // read master.json
+                                const masterJson = await readJson(masterJsonFilePath);
+                                masterJson.name = args.name;
+                                masterJson.github = {
+                                    repoName: args.name,
+                                    name: accountName
+                                };
 
-                                // render
-                                const template = new TextTemplate(originMasterJs, { start: '{({', end: '})}' });
-                                const data = {
-                                    name: args.name,
-                                    github: {
-                                        repoName: args.name,
-                                        name: accountName
-                                    }
-                                }
-                                const result = template.render(data);
-
-                                // write master.js
-                                await fs.writeFile(masterJsFilePath, result);
+                                // write master.json
+                                await writeJson(masterJsonFilePath, masterJson);
                             }
                         },
                         // Git add
                         {
                             title: 'Git add',
-                            task: () => runCommand(`git add master.js`, newPackagePath).then(result => {
+                            task: () => runCommand(`git add master.json`, newPackagePath).then(result => {
                                 if (result.code !== 0 && result.error.length > 0) {
                                     throw new Error(result.error.join(''));
                                 }
