@@ -37,7 +37,7 @@ export default class Package extends Command {
             exclusive: ['gh-user']
         }),
         'gh-user': flags.string({
-            description: 'Create github personal package',
+            description: 'Create github individual package',
             exclusive: ['gh-org']
         }),
 
@@ -94,7 +94,7 @@ export default class Package extends Command {
             questionsPart1.push({
                 type: 'list',
                 name: 'model',
-                message: `What's your package model?`,
+                message: `Choose your package model`,
                 choices: [
                     {
                         name: 'standard',
@@ -119,13 +119,13 @@ export default class Package extends Command {
             questionsPart1.push({
                 type: 'list',
                 name: 'kind',
-                message: `What's kind of your package?`,
-                choices: ['organization', 'personal'],
+                message: `Your package belong to`,
+                choices: ['organization', 'individual'],
             });
             questionsPart1.push({
                 type: 'input',
                 name: 'org',
-                message: 'Enter your organization name',
+                message: 'organization name',
                 default: 'master-style',
                 when(answers) {
                     return answers.kind == 'organization';
@@ -134,9 +134,9 @@ export default class Package extends Command {
             questionsPart1.push({
                 type: 'input',
                 name: 'user',
-                message: 'Enter your username name',
+                message: 'username',
                 when(answers) {
-                    return answers.kind == 'personal';
+                    return answers.kind == 'individual';
                 },
             });
         }
@@ -146,7 +146,7 @@ export default class Package extends Command {
         // questions part 1 summary
         const model = answersPart1.model ? answersPart1.model : flags.model;
         const branch = (model === 'standard' || model === 'css') ? model : 'js'; // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
-        const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'personal' : 'organization');
+        const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'individual' : 'organization');
         const githubName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
         if (model === 'util' || model === 'css') {
             args.name = `${args.name}.${model}`; // 為 PACKAGE_NAME 加上後綴
@@ -158,19 +158,19 @@ export default class Package extends Command {
         questionsPart2.push({
             type: 'input',
             name: 'name',
-            message: 'npm package name',
+            message: 'package name',
             default: defaultNpmPackageName
         });
         questionsPart2.push({
             type: 'input',
             name: 'license',
-            message: 'npm package license',
+            message: 'package license',
             default: 'MIT'
         });
         questionsPart2.push({
             type: 'input',
             name: 'description',
-            message: 'npm package description'
+            message: 'package description'
         });
         const answersPart2: any = await prompt(questionsPart2);
 
@@ -362,7 +362,7 @@ export default class Package extends Command {
                             title: 'Create repository',
                             task: async (ctx, task) => {
                                 let result: CommandResult;
-                                if (kind === 'personal') {
+                                if (kind === 'individual') {
                                     result = await runCommand(`gh repo create ${args.name} --public`);
                                 } else {
                                     result = await runCommand(`gh repo create ${githubName}/${args.name} --public`);
