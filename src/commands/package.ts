@@ -1,6 +1,5 @@
 import { Command, flags } from '@oclif/command';
 import { CommandResult, getMasterTextTemplateLanguage, runCommand } from '../utils';
-import { exec } from 'child_process';
 import { TextTemplate } from '@master/text-template';
 import { promises as fs } from 'fs';
 import * as Listr from 'listr';
@@ -75,12 +74,12 @@ export default class Package extends Command {
 
     async new(args: any, flags: any) {
 
-        // Check args.name
+        // check args.name
         if (!args.name) {
             throw new Error('Package name is required');
         }
 
-        // Check github cli installed
+        // check github cli installed
         try {
             await runCommand('gh');
         } catch {
@@ -192,11 +191,12 @@ export default class Package extends Command {
             // Clone package
             {
                 title: 'Clone package',
-                task: () => runCommand(`git clone -b ${branch} https://github.com/master-style/package.git ${args.name}`, process.cwd()).then(result => {
-                    if (result.code !== 0 && result.error.length > 0) {
-                        throw new Error(result.error.join(''));
+                task: async () => {
+                    const result = await runCommand(`git clone -b ${branch} https://github.com/master-style/package.git ${args.name}`, process.cwd());
+                    if (result.code !== 0) {
+                        throw new Error(result.err.join(''));
                     }
-                })
+                }
             },
             // Reset package remote
             {
@@ -206,20 +206,22 @@ export default class Package extends Command {
                         // Remote remove origin
                         {
                             title: 'Remote remove origin',
-                            task: (_, task) => runCommand(`git remote remove origin`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    task.skip(result.error.join(''));
+                            task: async (_, task) => {
+                                const result = await runCommand(`git remote remove origin`, newPackagePath);
+                                if (result.code !== 0) {
+                                    task.skip(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Remote add package
                         {
                             title: 'Remote add package',
-                            task: (_, task) => runCommand(`git remote add package https://github.com/master-style/package.git`, newPackagePath).then(result => {
-                                if (result.error.length > 0) {
-                                    task.skip(result.error.join(''));
+                            task: async (_, task) => {
+                                const result = await runCommand(`git remote add package https://github.com/master-style/package.git`, newPackagePath);
+                                if (result.err.length > 0) {
+                                    task.skip(result.err.join(''));
                                 }
-                            })
+                            }
                         }
                     ]);
                 }
@@ -232,11 +234,12 @@ export default class Package extends Command {
                         // Checkout to main
                         {
                             title: 'Checkout to main',
-                            task: () => runCommand(`git checkout -b main`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand(`git checkout -b main`, newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Create src/package.json
                         {
@@ -246,63 +249,65 @@ export default class Package extends Command {
                         // Git add
                         {
                             title: 'Git add',
-                            task: () => runCommand(`git add src/package.json`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand(`git add src/package.json`, newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Update master.json
                         {
                             title: 'Update master.json',
                             task: async () => {
-                                // read master.json
                                 const masterJson = await readJson(masterJsonFilePath);
                                 masterJson.name = args.name;
                                 masterJson.github = {
                                     repoName: args.name,
                                     name: accountName
                                 };
-
-                                // write master.json
                                 await writeJson(masterJsonFilePath, masterJson);
                             }
                         },
                         // Git add
                         {
                             title: 'Git add',
-                            task: () => runCommand(`git add master.json`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand(`git add master.json`, newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Update README.md
                         {
                             title: 'Update README.md',
-                            task: () => runCommand('m p r', newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand('m p r', newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Git add
                         {
                             title: 'Git add',
-                            task: () => runCommand(`git add README.md`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand(`git add README.md`, newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         },
                         // Git commit
                         {
                             title: 'Git commit',
-                            task: () => runCommand(`git commit -m "Init package info files"`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
-                                    throw new Error(result.error.join(''));
+                            task: async () => {
+                                const result = await runCommand(`git commit -m "Init package info files"`, newPackagePath);
+                                if (result.code !== 0) {
+                                    throw new Error(result.err.join(''));
                                 }
-                            })
+                            }
                         }
                     ]);
                 }
@@ -315,77 +320,51 @@ export default class Package extends Command {
                         // Check auth status
                         {
                             title: 'Check auth status',
-                            task: (ctx, task) => runCommand('gh auth status').then(result => {
-                                if (result.error.length > 0 && result.error[0].startsWith('You are not logged into any GitHub hosts')) {
+                            task: async (ctx, task) => {
+                                const result = await runCommand('gh auth status');
+                                if (result.err.length > 0 && result.err[0].startsWith('You are not logged into any GitHub hosts')) {
                                     ctx.ghLogin = false;
-                                    task.skip(result.error.join('\n'));
+                                    task.skip(result.err.join('\n'));
                                 } else {
                                     ctx.ghLogin = true;
                                 }
-                            })
+                            }
                         },
                         // Login
                         {
                             title: 'Login',
                             enabled: ctx => ctx.ghLogin === false,
-                            task: (ctx, task) => (new Promise<CommandResult>(function (resolve, reject) {
-                                const child = exec(`gh auth login -w`);
-
-                                const result = [];
-                                const error = [];
-                                const codeRegex = /[A-Z0-9]{4}-[A-Z0-9]{4}/g;
-
-                                child.stdout.on('data', (data: string) => {
-                                    result.push(data);
-                                    const match = data.match(codeRegex);
+                            task: async (ctx, task) => {
+                                const checkAndPrintCode = (data) => {
+                                    const match = data.match(/[A-Z0-9]{4}-[A-Z0-9]{4}/g);
                                     if (match && match.length > 0) {
                                         task.output = `Your one-time code: ${match.pop()}`;
                                     }
-                                });
-                                child.stderr.on('data', data => {
-                                    error.push(data);
-                                    const match = data.match(codeRegex);
-                                    if (match && match.length > 0) {
-                                        task.output = `Your one-time code: ${match.pop()}`;
-                                    }
-                                });
-
-                                child.stdin.end();
-                                child.addListener('error', (err: Error) => reject(err));
-                                child.addListener('exit', (code: number, signal: string) => resolve({ code, signal, result, error }));
-                            })).then(result => {
+                                }
+                                const result = await runCommand(`gh auth login -w`, null, checkAndPrintCode, checkAndPrintCode);
                                 if (result.code !== 0) {
                                     ctx.ghLogin = false;
-                                    throw new Error(result.error.join(''));
+                                    throw new Error(result.err.join(''));
                                 } else {
                                     ctx.ghLogin = true;
                                 }
-                            })
+                            }
                         },
                         // Create repository
                         {
                             title: 'Create repository',
-                            task: (ctx, task) => {
+                            task: async (ctx, task) => {
+                                let result: CommandResult;
                                 if (kind === 'personal') {
-                                    return runCommand(`gh repo create ${args.name} --public`)
-                                        .then(result => {
-                                            if (result.code !== 0 && result.error.length > 0) {
-                                                ctx.ghRepoCreated = false;
-                                                task.skip(result.error.join(''));
-                                            } else {
-                                                ctx.ghRepoCreated = true;
-                                            }
-                                        });
+                                    result = await runCommand(`gh repo create ${args.name} --public`);
                                 } else {
-                                    return runCommand(`gh repo create ${accountName}/${args.name} --public`)
-                                        .then(result => {
-                                            if (result.code !== 0 && result.error.length > 0) {
-                                                ctx.ghRepoCreated = false;
-                                                task.skip(result.error.join(''));
-                                            } else {
-                                                ctx.ghRepoCreated = true;
-                                            }
-                                        });
+                                    result = await runCommand(`gh repo create ${accountName}/${args.name} --public`);
+                                }
+                                if (result.code !== 0) {
+                                    ctx.ghRepoCreated = false;
+                                    task.skip(result.err.join(''));
+                                } else {
+                                    ctx.ghRepoCreated = true;
                                 }
                             }
                         },
@@ -393,14 +372,15 @@ export default class Package extends Command {
                         {
                             title: 'Remote add origin',
                             skip: ctx => ctx.ghRepoCreated !== true,
-                            task: (ctx, task) => runCommand(`git remote add origin https://github.com/${accountName}/${args.name}.git`, newPackagePath).then(result => {
-                                if (result.code !== 0 && result.error.length > 0) {
+                            task: async (ctx, task) => {
+                                const result = await runCommand(`git remote add origin https://github.com/${accountName}/${args.name}.git`, newPackagePath);
+                                if (result.code !== 0) {
                                     ctx.remoteAdded = false;
-                                    task.skip(result.error.join(''));
+                                    task.skip(result.err.join(''));
                                 } else {
                                     ctx.remoteAdded = true;
                                 }
-                            })
+                            }
                         }
                     ]);
                 }
@@ -409,11 +389,12 @@ export default class Package extends Command {
             {
                 title: 'Push new package to github repository',
                 skip: ctx => ctx.remoteAdded !== true,
-                task: (_, task) => runCommand(`git push origin main`, newPackagePath).then(result => {
+                task: async (_, task) => {
+                    const result = await runCommand(`git push origin main`, newPackagePath);
                     if (result.code !== 0) {
-                        task.skip(result.error.join(''));
+                        task.skip(result.err.join(''));
                     }
-                })
+                }
             }
         ]);
 
@@ -421,13 +402,13 @@ export default class Package extends Command {
     }
 
     async render(args: any, flags: any) {
-        // Check data file ext
+        // check data file ext
         const souceDataFileExt = path.extname(flags.data);
         if (souceDataFileExt !== '.js' && souceDataFileExt !== '.json') {
             throw new Error('Only support ".js" and ".json" files');
         }
 
-        // Check target file
+        // check target file
         if (!args.name) {
             args.name = 'README.md';
         }
@@ -450,18 +431,15 @@ export default class Package extends Command {
         } else {
             sourceData = JSON.parse(sourceDataString);
         }
-        // 在 sourceData 中加入 package.json 的資料
+
+        // add package.json data to sourceData
         sourceData['package'] = packageJsonData;
 
-        // 以 sourceData render 目標檔案
-        // render 註解標記的部分
         const targetTemplate1 = new TextTemplate(targetFileString, { behavior: 'slot', language: targetFileLanguage });
         const resultString1 = targetTemplate1.render(sourceData);
-        // render {{ }} 標記的部分
         const targetTemplate2 = new TextTemplate(resultString1);
         const resultString2 = targetTemplate2.render(sourceData);
 
-        // 寫回目標檔案
         await fs.writeFile(targetFilePath, resultString2);
     }
 }

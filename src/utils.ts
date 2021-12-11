@@ -1,5 +1,4 @@
-import { ChildProcess, exec } from 'child_process';
-import * as os from 'os';
+import { spawn } from 'child_process';
 
 export function getMasterTextTemplateLanguage(fileExt: string) {
     switch (fileExt) {
@@ -25,38 +24,32 @@ export function getMasterTextTemplateLanguage(fileExt: string) {
 export interface CommandResult{
     code: number;
     signal: string;
-    result: string[];
-    error: string[];
+    out: string[];
+    err: string[];
 }
 
-export function runCommand(command: string, path?: string, log: boolean = false): Promise<CommandResult> {
-    let child: ChildProcess;
-    if (!path) {
-        path = os.homedir();
-    }
-    if (process.platform === 'win32') {
-        child = exec(`${command}`, { shell: 'powershell', cwd: path });
-    } else {
-        child = exec(`${command}`, { cwd: path });
-    }
-
+export function runCommand(command: string, path?: string, stdout?: (data: string) => void, stderr?: (data: string) => void): Promise<CommandResult> {
     return new Promise(function (resolve, reject) {
-        const result = [];
-        const error = [];
+        const options = {};
+        if (path) {
+            options['cwd'] = path;
+        }
+        if (process.platform === 'win32') {
+            options['shell'] = 'powershell';
+        }
+        const child = spawn(command, options);
+        const out = [];
+        const err = [];
         child.stdout.on('data', data => {
-            result.push(data);
-            if (log) {
-                console.log(data);
-            }
+            out.push(data.toString());
+            if (stdout) stdout(data.toString());
         });
         child.stderr.on('data', data => {
-            error.push(data);
-            if (log) {
-                console.log(data);
-            }
+            err.push(data.toString());
+            if (stderr) stderr(data.toString());
         });
         child.stdin.end();
-        child.addListener('error', (err: Error) => reject(err));
-        child.addListener('exit', (code: number, signal: string) => resolve({ code, signal, result, error}));
+        child.on('error', (err: Error) => reject(err));
+        child.on('exit', (code: number, signal: string) => resolve({ code, signal, out, err}));
     });
 }
