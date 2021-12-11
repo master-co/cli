@@ -89,9 +89,9 @@ export default class Package extends Command {
         }
 
         // questions part 1 - package basic info and github info
-        const questionsPart1 = [];
+        const part1Questions = [];
         if (!flags.model) {
-            questionsPart1.push({
+            part1Questions.push({
                 type: 'list',
                 name: 'model',
                 message: `Choose your package model`,
@@ -116,13 +116,13 @@ export default class Package extends Command {
             });
         }
         if (!flags['gh-org'] && !flags['gh-user']) {
-            questionsPart1.push({
+            part1Questions.push({
                 type: 'list',
                 name: 'kind',
                 message: `Your package belong to`,
                 choices: ['organization', 'individual'],
             });
-            questionsPart1.push({
+            part1Questions.push({
                 type: 'input',
                 name: 'org',
                 message: 'organization name',
@@ -131,7 +131,7 @@ export default class Package extends Command {
                     return answers.kind == 'organization';
                 },
             });
-            questionsPart1.push({
+            part1Questions.push({
                 type: 'input',
                 name: 'user',
                 message: 'username',
@@ -141,44 +141,44 @@ export default class Package extends Command {
             });
         }
 
-        const answersPart1: any = await prompt(questionsPart1);
+        const part1Answers: any = await prompt(part1Questions);
 
         // questions part 1 summary
-        const model = answersPart1.model ? answersPart1.model : flags.model;
+        const model = part1Answers.model ? part1Answers.model : flags.model;
         const branch = (model === 'standard' || model === 'css') ? model : 'js'; // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
-        const kind = answersPart1.kind ? answersPart1.kind : (flags['gh-user'] ? 'individual' : 'organization');
-        const githubName = answersPart1.user ? answersPart1.user : (answersPart1.org ? answersPart1.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
+        const kind = part1Answers.kind ? part1Answers.kind : (flags['gh-user'] ? 'individual' : 'organization');
+        const githubName = part1Answers.user ? part1Answers.user : (part1Answers.org ? part1Answers.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
         if (model === 'util' || model === 'css') {
             args.name = `${args.name}.${model}`; // 為 PACKAGE_NAME 加上後綴
         }
         let defaultNpmPackageName = `@master/${args.name}`;
 
         // questions part 2 - npm package
-        const questionsPart2 = [];
-        questionsPart2.push({
+        const part2Questions = [];
+        part2Questions.push({
             type: 'input',
             name: 'name',
             message: 'package name',
             default: defaultNpmPackageName
         });
-        questionsPart2.push({
+        part2Questions.push({
             type: 'input',
             name: 'license',
             message: 'package license',
             default: 'MIT'
         });
-        questionsPart2.push({
+        part2Questions.push({
             type: 'input',
             name: 'description',
             message: 'package description'
         });
-        const answersPart2: any = await prompt(questionsPart2);
+        const part2Answers: any = await prompt(part2Questions);
 
         // questions part 2 summary
         const packageJson = {
-            name: answersPart2.name,
-            description: answersPart2.description,
-            license: answersPart2.license,
+            name: part2Answers.name,
+            description: part2Answers.description,
+            license: part2Answers.license,
             main: branch === 'css' ? 'index.css' : 'index.js',
             private: false,
             repository: {
