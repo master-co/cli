@@ -263,7 +263,6 @@ export default class Package extends Command {
                                 const config = await readJson(configFilePath);
                                 config.name = args.name;
                                 config.github = {
-                                    repoName: args.name,
                                     name: accountName
                                 };
                                 await writeJson(configFilePath, config);
