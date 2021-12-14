@@ -1,7 +1,5 @@
 import { Command, flags } from '@oclif/command';
-import { CommandResult } from '../interfaces/command-result';
 import { getTextTemplateLanguage } from '../utils/get-text-template-language';
-import { runCommand } from '../utils/run-command';
 import { TextTemplate } from '@master/text-template';
 import { promises as fs } from 'fs';
 import * as Listr from 'listr';
@@ -9,6 +7,7 @@ import * as writeJson from 'writejson';
 import * as readJson from 'readjson';
 import * as path from 'path';
 import * as inquirer from 'inquirer';
+import * as execa from 'execa';
 
 const prompt = inquirer.createPromptModule();
 
@@ -75,7 +74,6 @@ export default class Package extends Command {
     }
 
     async new(args: any, flags: any) {
-
         // check args.name
         if (!args.name) {
             throw new Error('Package name is required');
@@ -83,7 +81,7 @@ export default class Package extends Command {
 
         // check github cli installed
         try {
-            await runCommand('gh');
+            await execa('gh');
         } catch {
             throw new Error(`Require dependency of command "gh", please install Github CLI\n https://cli.github.com/`);
         }
@@ -200,10 +198,7 @@ export default class Package extends Command {
             {
                 title: 'Clone package',
                 task: async () => {
-                    const result = await runCommand(`git clone -b ${branch} https://github.com/master-style/package.git ${args.name}`, process.cwd());
-                    if (result.code !== 0) {
-                        throw new Error(result.err.join(''));
-                    }
+                    await execa('git', ['clone', '-b', branch, 'https://github.com/master-style/package.git', args.name]);
                 }
             },
             // Reset package remote
@@ -215,9 +210,10 @@ export default class Package extends Command {
                         {
                             title: 'Remote remove origin',
                             task: async (_, task) => {
-                                const result = await runCommand(`git remote remove origin`, newPackagePath);
-                                if (result.code !== 0) {
-                                    task.skip(result.err.join(''));
+                                try {
+                                    await execa('git', ['remote', 'remove', 'origin'], { cwd: newPackagePath });
+                                } catch (ex) {
+                                    task.skip(ex.message);
                                 }
                             }
                         },
@@ -225,9 +221,10 @@ export default class Package extends Command {
                         {
                             title: 'Remote add package',
                             task: async (_, task) => {
-                                const result = await runCommand(`git remote add package https://github.com/master-style/package.git`, newPackagePath);
-                                if (result.err.length > 0) {
-                                    task.skip(result.err.join(''));
+                                try {
+                                    await execa('git', ['remote', 'add', 'package', 'https://github.com/master-style/package.git'], { cwd: newPackagePath });
+                                } catch (ex) {
+                                    task.skip(ex.message);
                                 }
                             }
                         }
@@ -243,10 +240,7 @@ export default class Package extends Command {
                         {
                             title: 'Checkout to main',
                             task: async () => {
-                                const result = await runCommand(`git checkout -b main`, newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('git', ['checkout', '-b', 'main'], { cwd: newPackagePath });
                             }
                         },
                         // Create src/package.json
@@ -258,10 +252,7 @@ export default class Package extends Command {
                         {
                             title: 'Git add',
                             task: async () => {
-                                const result = await runCommand(`git add src/package.json`, newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('git', ['add', 'src/package.json'], { cwd: newPackagePath });
                             }
                         },
                         // Update master.json
@@ -280,40 +271,28 @@ export default class Package extends Command {
                         {
                             title: 'Git add',
                             task: async () => {
-                                const result = await runCommand(`git add master.json`, newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('git', ['add', 'master.json'], { cwd: newPackagePath });
                             }
                         },
                         // Update README.md
                         {
                             title: 'Update README.md',
                             task: async () => {
-                                const result = await runCommand('m p r', newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('m', ['p', 'r'], { cwd: newPackagePath });
                             }
                         },
                         // Git add
                         {
                             title: 'Git add',
                             task: async () => {
-                                const result = await runCommand(`git add README.md`, newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('git', ['add', 'README.md'], { cwd: newPackagePath });
                             }
                         },
                         // Git commit
                         {
                             title: 'Git commit',
                             task: async () => {
-                                const result = await runCommand(`git commit -m "Init package info files"`, newPackagePath);
-                                if (result.code !== 0) {
-                                    throw new Error(result.err.join(''));
-                                }
+                                await execa('git', ['commit', '-m', 'Init package info files'], { cwd: newPackagePath });
                             }
                         }
                     ]);
@@ -328,12 +307,14 @@ export default class Package extends Command {
                         {
                             title: 'Check auth status',
                             task: async (ctx, task) => {
-                                const result = await runCommand('gh auth status');
-                                if (result.err.length > 0 && result.err[0].startsWith('You are not logged into any GitHub hosts')) {
-                                    ctx.ghLogin = false;
-                                    task.skip(result.err.join('\n'));
-                                } else {
+                                try {
+                                    await execa('gh', ['auth', 'status']);
                                     ctx.ghLogin = true;
+                                } catch (ex) {
+                                    if (ex.exitCode === 1) {
+                                        ctx.ghLogin = false;
+                                        task.skip(ex.message);
+                                    }
                                 }
                             }
                         },
@@ -343,35 +324,39 @@ export default class Package extends Command {
                             enabled: ctx => ctx.ghLogin === false,
                             task: async (ctx, task) => {
                                 const checkAndPrintCode = (data) => {
-                                    const match = data.match(/[A-Z0-9]{4}-[A-Z0-9]{4}/g);
+                                    const match = data.toString().match(/[A-Z0-9]{4}-[A-Z0-9]{4}/g);
                                     if (match && match.length > 0) {
                                         task.output = `Your one-time code: ${match.pop()}`;
                                     }
                                 }
-                                const result = await runCommand(`gh auth login -w`, null, checkAndPrintCode, checkAndPrintCode);
-                                if (result.code !== 0) {
+                                try {
+                                    const child = execa('gh', ['auth', 'login', '-w']);
+                                    child.stdout.on('data', checkAndPrintCode);
+                                    child.stderr.on('data', checkAndPrintCode);
+                                    child.stdin.end();
+                                    await child;
+                                } catch (ex) {
                                     ctx.ghLogin = false;
-                                    throw new Error(result.err.join(''));
-                                } else {
-                                    ctx.ghLogin = true;
+                                    throw new Error(ex.message);
                                 }
+
+                                ctx.ghLogin = true;
                             }
                         },
                         // Create repository
                         {
                             title: 'Create repository',
                             task: async (ctx, task) => {
-                                let result: CommandResult;
-                                if (kind === 'individual') {
-                                    result = await runCommand(`gh repo create ${args.name} --public`);
-                                } else {
-                                    result = await runCommand(`gh repo create ${githubName}/${args.name} --public`);
-                                }
-                                if (result.code !== 0) {
-                                    ctx.ghRepoCreated = false;
-                                    task.skip(result.err.join(''));
-                                } else {
+                                try {
+                                    if (kind === 'individual') {
+                                        await execa('gh', ['repo', 'create', args.name, '--public']);
+                                    } else {
+                                        await execa('gh', ['repo', 'create', `${githubName}/${args.name}`, '--public']);
+                                    }
                                     ctx.ghRepoCreated = true;
+                                } catch (ex) {
+                                    ctx.ghRepoCreated = false;
+                                    task.skip(ex.message);
                                 }
                             }
                         },
@@ -380,12 +365,12 @@ export default class Package extends Command {
                             title: 'Remote add origin',
                             skip: ctx => ctx.ghRepoCreated !== true,
                             task: async (ctx, task) => {
-                                const result = await runCommand(`git remote add origin https://github.com/${githubName}/${args.name}.git`, newPackagePath);
-                                if (result.code !== 0) {
-                                    ctx.remoteAdded = false;
-                                    task.skip(result.err.join(''));
-                                } else {
+                                try {
+                                    await execa('git', ['remote', 'add', 'origin', `https://github.com/${githubName}/${args.name}.git`], { cwd: newPackagePath });
                                     ctx.remoteAdded = true;
+                                } catch (ex) {
+                                    ctx.remoteAdded = false;
+                                    task.skip(ex.message);
                                 }
                             }
                         }
@@ -395,11 +380,11 @@ export default class Package extends Command {
             // Push new package to github repository
             {
                 title: 'Push new package to github repository',
-                skip: ctx => ctx.remoteAdded !== true,
                 task: async (_, task) => {
-                    const result = await runCommand(`git push origin main`, newPackagePath);
-                    if (result.code !== 0) {
-                        task.skip(result.err.join(''));
+                    try {
+                        await execa('git', ['push', 'origin', 'main'], { cwd: newPackagePath });
+                    } catch (ex) {
+                        task.skip(`git push failed, please try again manually.`);
                     }
                 }
             }
