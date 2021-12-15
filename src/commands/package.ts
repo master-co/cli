@@ -170,12 +170,26 @@ export default class Package extends Command {
             name: 'description',
             message: 'package description'
         });
+        part2Questions.push({
+            type: 'input',
+            name: 'author',
+            message: 'package author',
+            default: 'Aoyue Design LTD.'
+        });
+        part2Questions.push({
+            type: 'input',
+            name: 'funding',
+            message: 'package funding',
+            default: 'https://opencollective.com/master-style'
+        });
         const part2Answers: any = await prompt(part2Questions);
 
         // questions part 2 summary
         const packageJson = {
             name: part2Answers.name,
             description: part2Answers.description,
+            author: part2Answers.author,
+            funding: part2Answers.funding,
             license: part2Answers.license,
             main: branch === 'css' ? 'index.css' : 'index.js',
             private: false,

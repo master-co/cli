@@ -48,7 +48,7 @@
         "@oclif/plugin-help": "^3.2.14",
         "execa": "^5.1.1",
         "inquirer": "^8.2.0",
-        "listr": "^0.14.3",
+        "listr": "^0.14.2",
         "readjson": "^2.2.2",
         "rxjs": "^7.4.0",
         "tslib": "^1.14.1",
