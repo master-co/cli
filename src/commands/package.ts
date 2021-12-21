@@ -6,8 +6,11 @@ import * as Listr from 'listr';
 import * as writeJson from 'writejson';
 import * as readJson from 'readjson';
 import * as path from 'path';
+import * as os from 'os';
 import * as inquirer from 'inquirer';
 import * as execa from 'execa';
+import { getConfig } from '../utils/get-config';
+import { saveConfig } from '../utils/save-config';
 
 const prompt = inquirer.createPromptModule();
 
@@ -51,7 +54,11 @@ export default class Package extends Command {
         {
             name: 'action',
             required: true,
-            options: ['new', 'n', 'render', 'r']
+            options: [
+                'new', 'n',
+                'render', 'r',
+                'update', 'u'
+            ]
         },
         {
             name: 'name'
@@ -69,6 +76,10 @@ export default class Package extends Command {
             case 'render':
             case 'r':
                 await this.render(args, flags);
+                break;
+            case 'update':
+            case 'u':
+                await this.update(args, flags);
                 break;
         }
     }
@@ -449,5 +460,97 @@ export default class Package extends Command {
         const renderedText = template.render(data);
 
         await fs.writeFile(targetFilePath, renderedText);
+    }
+
+    async update(args: any, flags: any) {
+        // check target package
+        if (!args.name) {
+            args.name = 'all';
+        }
+
+        const config = await getConfig();
+        if (!config.masterRoot) {
+            const rootAnswers: any = await prompt([
+                {
+                    type: 'input',
+                    name: 'root',
+                    message: 'Where is the root directory of your "master" projects?',
+                    default: `${os.homedir()}/master`
+                }
+            ]);
+            config.masterRoot = rootAnswers.root;
+            await saveConfig(config);
+        }
+
+        const projects = []
+        if (args.name === 'all') {
+            const files = await fs.readdir(config.masterRoot);
+            for (const file of files) {
+                const stats = await fs.stat(path.join(config.masterRoot, file));
+                if (stats.isDirectory()) {
+                    projects.push(file);
+                }
+            }
+        } else {
+            projects.push(args.name);
+        }
+
+        const tasks = new Listr([
+            {
+                title: 'Git pull',
+                task: () => {
+                    const pullTasks = projects.map(project => ({
+                        title: project,
+                            task: async (ctx, task) => {
+                                try {
+                                    await execa('git', ['pull'], { cwd: path.join(config.masterRoot, project) });
+                                } catch (ex) {
+                                    if (ex.exitCode === 1) {
+                                        task.skip(ex.message);
+                                    }
+                                }
+                            }
+                    }));
+                    return new Listr(pullTasks, { concurrent: true });
+                }
+            },
+            {
+                title: 'Install',
+                task: () => {
+                    const installTasks = projects.map(project => ({
+                        title: project,
+                        task: async (ctx, task) => {
+                            try {
+                                await execa('npm', ['i'], { cwd: path.join(config.masterRoot, project) });
+                            } catch (ex) {
+                                if (ex.exitCode === 1) {
+                                    task.skip(ex.message);
+                                }
+                            }
+                        }
+                    }));
+                    return new Listr(installTasks, { concurrent: true });
+                }
+            },
+            {
+                title: 'Build',
+                task: () => {
+                    const buildTasks = projects.map(project => ({
+                        title: project,
+                        task: async (ctx, task) => {
+                            try {
+                                await execa('npm', ['run', 'build'], { cwd: path.join(config.masterRoot, project) });
+                            } catch (ex) {
+                                if (ex.exitCode === 1) {
+                                    task.skip(ex.message);
+                                }
+                            }
+                        }
+                    }));
+                    return new Listr(buildTasks, { concurrent: true });
+                }
+            }
+        ]);
+        await tasks.run();
     }
 }

@@ -47,7 +47,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.17/src/commands/help.ts)_
 
 ## `m package ACTION [NAME]`
 
@@ -61,7 +61,7 @@ OPTIONS
   -m, --model=standard|css|util|class  According to which model to build the package
   --data=data                          [default: master.json] According to what file to render
   --gh-org=gh-org                      Create github organization package
-  --gh-user=gh-user                    Create github personal package
+  --gh-user=gh-user                    Create github individual package
 
 ALIASES
   $ m p
