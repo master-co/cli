@@ -5,6 +5,9 @@
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/@master/cli.svg)](https://npmjs.org/package/@master/cli)
+[![CircleCI](https://circleci.com/gh/master-style/cli/tree/alpha.svg?style=shield)](https://circleci.com/gh/master-style/cli/tree/alpha)
+[![Downloads/week](https://img.shields.io/npm/dw/@master/cli.svg)](https://npmjs.org/package/@master/cli)
+[![License](https://img.shields.io/npm/l/@master/cli.svg)](https://github.com/master-style/cli/blob/alpha/LICENSE)
 
 <!-- toc -->
 * [Usage](#usage)
