@@ -475,7 +475,7 @@ export default class Package extends Command {
                     type: 'input',
                     name: 'root',
                     message: 'Where is the root directory of your "master" projects?',
-                    default: `${os.homedir()}/master`
+                    default: path.join(os.homedir(), 'master')
                 }
             ]);
             config.masterRoot = rootAnswers.root;
