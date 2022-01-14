@@ -47,7 +47,12 @@ export default class Package extends Command {
         data: flags.string({
             description: 'According to what file to render',
             default: 'master.json'
-        })
+        }),
+
+        // update
+        'skip-install': flags.boolean({
+            description: 'Skip npm install'
+        }),
     }
 
     static args = [
@@ -495,7 +500,7 @@ export default class Package extends Command {
             projects.push(args.name);
         }
 
-        const tasks = new Listr([
+        const tasks = [
             {
                 title: 'Git pull',
                 task: () => {
@@ -514,24 +519,29 @@ export default class Package extends Command {
                     return new Listr(pullTasks, { concurrent: true });
                 }
             },
-            {
+        ];
+
+        if (!flags['skip-install']) {
+            tasks.push({
                 title: 'Install',
-                task: () => {
-                    const installTasks = projects.map(project => ({
-                        title: project,
-                        task: async (ctx, task) => {
-                            try {
-                                await execa('npm', ['i'], { cwd: path.join(config.masterRoot, project) });
-                            } catch (ex) {
-                                if (ex.exitCode === 1) {
-                                    task.skip(ex.message);
+                    task: () => {
+                        const installTasks = projects.map(project => ({
+                            title: project,
+                            task: async (ctx, task) => {
+                                try {
+                                    await execa('npm', ['i'], { cwd: path.join(config.masterRoot, project) });
+                                } catch (ex) {
+                                    if (ex.exitCode === 1) {
+                                        task.skip(ex.message);
+                                    }
                                 }
                             }
-                        }
-                    }));
-                    return new Listr(installTasks, { concurrent: true });
-                }
-            },
+                        }));
+                        return new Listr(installTasks, { concurrent: true });
+                    }
+            });
+        }
+        tasks.push(
             {
                 title: 'Build',
                 task: () => {
@@ -550,7 +560,7 @@ export default class Package extends Command {
                     return new Listr(buildTasks, { concurrent: true });
                 }
             }
-        ]);
-        await tasks.run();
+        );
+        await new Listr(tasks).run();
     }
 }
