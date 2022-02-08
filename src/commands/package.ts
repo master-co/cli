@@ -140,7 +140,7 @@ export default class Package extends Command {
                 type: 'input',
                 name: 'org',
                 message: 'organization name',
-                default: 'master-style',
+                default: 'master-co',
                 when(answers) {
                     return answers.kind == 'organization';
                 },
@@ -196,7 +196,7 @@ export default class Package extends Command {
             type: 'input',
             name: 'funding',
             message: 'package funding',
-            default: 'https://opencollective.com/master-style'
+            default: 'https://opencollective.com/master-co'
         });
         const part2Answers: any = await prompt(part2Questions);
 
@@ -228,7 +228,7 @@ export default class Package extends Command {
             {
                 title: 'Clone package',
                 task: async () => {
-                    await execa('git', ['clone', '-b', branch, 'https://github.com/master-style/package.git', args.name]);
+                    await execa('git', ['clone', '-b', branch, 'https://github.com/master-co/package.git', args.name]);
                 }
             },
             // Reset package remote
@@ -252,7 +252,7 @@ export default class Package extends Command {
                             title: 'Remote add package',
                             task: async (_, task) => {
                                 try {
-                                    await execa('git', ['remote', 'add', 'package', 'https://github.com/master-style/package.git'], { cwd: newPackagePath });
+                                    await execa('git', ['remote', 'add', 'package', 'https://github.com/master-co/package.git'], { cwd: newPackagePath });
                                 } catch (ex) {
                                     task.skip(ex.message);
                                 }

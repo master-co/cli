@@ -5,9 +5,9 @@
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/@master/cli.svg)](https://npmjs.org/package/@master/cli)
-[![CircleCI](https://circleci.com/gh/master-style/cli/tree/alpha.svg?style=shield)](https://circleci.com/gh/master-style/cli/tree/alpha)
+[![CircleCI](https://circleci.com/gh/master-co/cli/tree/alpha.svg?style=shield)](https://circleci.com/gh/master-co/cli/tree/alpha)
 [![Downloads/week](https://img.shields.io/npm/dw/@master/cli.svg)](https://npmjs.org/package/@master/cli)
-[![License](https://img.shields.io/npm/l/@master/cli.svg)](https://github.com/master-style/cli/blob/alpha/LICENSE)
+[![License](https://img.shields.io/npm/l/@master/cli.svg)](https://github.com/master-co/cli/blob/alpha/LICENSE)
 
 <!-- toc -->
 * [Usage](#usage)
@@ -74,5 +74,5 @@ EXAMPLES
   $ m package render README.md --data master.json
 ```
 
-_See code: [src/commands/package.ts](https://github.com/master-style/cli/blob/v0.0.0/src/commands/package.ts)_
+_See code: [src/commands/package.ts](https://github.com/master-co/cli/blob/v0.0.0/src/commands/package.ts)_
 <!-- commandsstop -->
