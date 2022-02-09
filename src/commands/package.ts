@@ -190,7 +190,7 @@ export default class Package extends Command {
             type: 'input',
             name: 'author',
             message: 'package author',
-            default: 'Aoyue Design LTD.'
+            default: 'Aoyue Design LLC.'
         });
         part2Questions.push({
             type: 'input',
