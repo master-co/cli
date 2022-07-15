@@ -162,17 +162,20 @@ export default class Package extends Command {
         const branch = (model === 'standard' || model === 'css') ? model : 'js'; // 若 model 為 'standard'、'css'，則 branch = model；若 model 為 'js'、'class'，則 branch = 'js'
         const kind = part1Answers.kind ? part1Answers.kind : (flags['gh-user'] ? 'individual' : 'organization');
         const githubName = part1Answers.user ? part1Answers.user : (part1Answers.org ? part1Answers.org : (flags['gh-user'] ? flags['gh-user'] : flags['gh-org']));
-        if (model === 'util' || model === 'css') {
-            args.name = `${args.name}.${model}`; // 為 PACKAGE_NAME 加上後綴
-        }
         let defaultNpmPackageName = `@master/${args.name}`;
 
         // questions part 2 - npm package
         const part2Questions = [];
         part2Questions.push({
             type: 'input',
+            name: 'suffix',
+            message: 'package suffix',
+            default: model === 'util' || model === 'css' ? `.${model}` : ''
+        });
+        part2Questions.push({
+            type: 'input',
             name: 'name',
-            message: 'package name',
+            message: 'package name (suffix not included)',
             default: defaultNpmPackageName
         });
         part2Questions.push({
@@ -199,6 +202,8 @@ export default class Package extends Command {
             default: 'https://opencollective.com/master-co'
         });
         const part2Answers: any = await prompt(part2Questions);
+        
+        args.name = `${args.name}${part2Answers.suffix}`; // 為 PACKAGE_NAME 加上後綴
 
         // questions part 2 summary
         const packageJson = {
