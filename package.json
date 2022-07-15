@@ -42,7 +42,7 @@
         "typescript": "^3.9.10"
     },
     "dependencies": {
-        "@master/text-template": "^1.0.3",
+        "@master/text-template": "^1.0.7",
         "@oclif/command": "^1.8.9",
         "@oclif/config": "^1.18.2",
         "@oclif/plugin-help": "^3.2.14",
