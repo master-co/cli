@@ -25,7 +25,7 @@ export default class Package extends Command {
         `$ m package render README.md --data master.json`,
     ]
 
-    static flags = {
+    static flags: any = {
         help: flags.help({ char: 'h', hidden: true }),
 
         // new
